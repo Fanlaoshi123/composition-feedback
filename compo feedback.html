@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>作文反馈助手</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #f4f4f4; border-radius: 10px; }
+    textarea, input { width: 100%; padding: 10px; margin-top: 10px; border-radius: 6px; border: 1px solid #ccc; }
+    button { padding: 10px 20px; margin-top: 20px; font-size: 16px; border: none; border-radius: 6px; background-color: #4CAF50; color: white; cursor: pointer; }
+    #feedback { margin-top: 30px; background: #fff; padding: 15px; border-radius: 6px; border: 1px solid #ddd; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h2>✏️ 作文反馈助手</h2>
+
+  <label>请输入作文内容：</label>
+  <textarea id="content" rows="10" placeholder="在这里粘贴学生的作文内容"></textarea>
+
+  <button onclick="getFeedback()">提交并获取反馈</button>
+
+  <div id="feedback"></div>
+
+  <script>
+    async function getFeedback() {
+      const content = document.getElementById("content").value;
+      const feedbackDiv = document.getElementById("feedback");
+
+      feedbackDiv.innerHTML = "正在生成反馈，请稍候...";
+
+      const apiKey = "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"; // ← 请在这里粘贴你的 API Key
+
+      const prompt = `1、作文基本技巧原则是SHOW NOT TELL，就是体会人物在情境中的感受，用人物动作、表情、想法、和对话的语气内容去描写人物。通过人物的”表演“来阐述整个故事来龙去脉。
+
+2、为了让这段话和前一段和下一段很好的衔接。过渡词：过了一会儿、就这样、想到这、于是、突然、不久等。
+
+3、一定要用学过的对话模式，“说”“问”“骂”“想”之前都要有人物的动作或者表情去表现出人物心情感受。例如：小明很高兴地说：”我又考了一百分！“妈妈也开心地说：”你真棒！“这组对话内容根据SHOW NOT TEL的原则，可以改成举起考卷，手舞足蹈地跑到妈妈面前说：”妈妈！我又考了一百分！“ 妈妈摸摸小明的头，微笑着说：”你真棒！“ 但是对话的格式，如果有改变就更好，比如：小明举起考卷，手舞足蹈地跑到妈妈面前说：”妈妈！我又考了一百分！“ ”你真棒！“妈妈听了，摸摸小明的头，微笑着说。
+
+所有总结一下：批改的段落一定要有以下要求：1、一定要有过渡，能连接前一段和后一段2、对话前一定要有针对人物心情的动作或者表情 。
+最后，针对以上要求，给出一个表格给学生，一栏是学生写的，一栏是给他的反馈，一栏是建议修改后的内容\n\n${content}`;
+
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [
+              { role: "user", content: prompt }
+            ]
+          })
+        });
+
+        const data = await response.json();
+        const result = data.choices[0].message.content;
+        feedbackDiv.innerHTML = `<h3>📘 作文反馈：</h3><p>${result}</p>`;
+      } catch (error) {
+        feedbackDiv.innerHTML = "❌ 出现错误，请检查 API Key 是否正确，或稍后再试。";
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
